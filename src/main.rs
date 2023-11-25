@@ -1,40 +1,53 @@
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{self, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-fn main() {
-    // Get command line arguments
+
+fn 
+main() {
+    // Retrieve directory and file path from the command line argument
     let args: Vec<String> = std::env::args().collect();
 
+    // Check if a single command line argument is provided
     if args.len() != 2 {
-        eprintln!("Usage: mkdirfi <path_to_create>");
+        eprintln!("Usage: {} <directory/file>", args[0]);
         std::process::exit(1);
     }
 
-    let path_to_create = &args[1];
+    let target_path = &args[1];
 
-    // Create the parent directory and the file
-    if let Some(parent_dir) = Path::new(path_to_create).parent() {
-        if let Err(err) = fs::create_dir_all(parent_dir) {
-            eprintln!("Error creating directory: {}", err);
-            std::process::exit(1);
-        }
+    // Create the directory or file based on the specified path
+    if let Err(e) = create_dir_or_file(target_path) {
+        eprintln!("Error creating {}: {}", target_path, e);
+        std::process::exit(1);
     }
 
-    match File::create(path_to_create) {
-        Ok(mut file) => {
-            // You can optionally write data to the file here if needed.
-            // For example, you can write an initial content to the file.
-            if let Err(err) = writeln!(file) {
-                eprintln!("Error writing to file: {}", err);
-                std::process::exit(1);
+    println!("Directory or file created successfully.");
+}
+
+// Function to create a directory or file at the specified path
+fn
+create_dir_or_file(target_path: &str) -> io::Result<()> {
+    let path = Path::new(target_path);
+
+    if path.is_dir() {
+        // Create the directory and its parents
+        if let Err(e) = std::fs::create_dir_all(path) {
+            return Err(io::Error::new(io::ErrorKind::Other, e));
+        }
+    } else {
+        // Create the file and its parent directories
+        if let Some(parent) = path.parent() {
+            if !parent.exists() {
+                std::fs::create_dir_all(parent)?;
             }
-            println!("Created file: {:?}", path_to_create);
         }
-        Err(err) => {
-            eprintln!("Error creating file: {}", err);
-            std::process::exit(1);
-        }
+
+        let mut file = File::create(&path)?;
+        // Write initial content to the file if needed
+        writeln!(file, "// Your initial content goes here")?;
     }
+
+    Ok(())
 }
 
