@@ -4,7 +4,8 @@ use std::path::Path;
 
 
 fn 
-main() {
+main() 
+{
     // Retrieve directory and file path from the command line argument
     let args: Vec<String> = std::env::args().collect();
 
@@ -27,7 +28,8 @@ main() {
 
 // Function to create a directory or file at the specified path
 fn
-create_dir_or_file(target_path: &str) -> io::Result<()> {
+create_dir_or_file(target_path: &str) -> io::Result<()> 
+{
     let path = Path::new(target_path);
 
     if path.is_dir() {
